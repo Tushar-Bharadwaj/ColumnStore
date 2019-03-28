@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class ColumnManager {
+public class ColumnManager implements Serializable{
     //Total Number Of Elements Present In The Column
     private int elementCount;
     //List Of All Serialized Object File Names
@@ -287,6 +287,19 @@ public class ColumnManager {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "ColumnManager{" +
+                "elementCount=" + elementCount +
+                ", fileNames=" + fileNames +
+                ", dataType='" + dataType + '\'' +
+                ", elementSize=" + elementSize +
+                ", serializeSize=" + serializeSize +
+                ", columnName='" + columnName + '\'' +
+                ", fileIndex=" + fileIndex +
+                '}';
+    }
+
     /**
      * Testing
      * @param args
@@ -306,6 +319,7 @@ public class ColumnManager {
                     System.out.println("Enter Data To Be Inserted");
                     String input = scan.nextLine();
                     manager.insert(input);
+                    System.out.println("Total Elements Are :"+manager.elementCount);;
                     break;
                 case 2:
                     System.out.println("Enter Data To Be Deleted");
@@ -319,6 +333,7 @@ public class ColumnManager {
                             result[i] = temp[i];
                         manager.delete(result);
                     }
+                    System.out.println("Total Elements Are :"+manager.elementCount);;
                     break;
                 case 3:
                     System.out.println("Enter The Data To Be Updated To");
