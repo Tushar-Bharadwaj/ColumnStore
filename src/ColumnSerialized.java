@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class ColumnSerialized implements Serializable {
     private int elementCount;
     private int storageSize;
+    private String dataType;
     private ArrayList<String> data = new ArrayList<String>();
 
     public ColumnSerialized(int size) {
@@ -85,6 +86,69 @@ public class ColumnSerialized implements Serializable {
         }
         return null;
     }
+
+    /**
+     * Fetches the id's of elements that match the privided condition from the column
+     * @param value Value to be compared against
+     * @param operation operation to be done
+     * @return array of indices from the column
+     */
+    public Integer[] conditionalSelect(String value, String operation) {
+        ArrayList<Integer> values = new ArrayList<Integer>();
+        int index = 0; //Index at current element;
+
+        /**
+         * If the selected value matches the conditions add it to the values arraylist which
+         * contains the final list of values that satisfiy the conditions
+         */
+        for(String element : data) {
+            //If the selected operation is 'equals'
+            try {
+                if (operation.equals("=") && value.equals(element)) {
+                    values.add(index);
+                } else if (operation.equals("<=") && Float.parseFloat(value.trim()) >= Float.parseFloat(element)) {
+                    values.add(index);
+                } else if (operation.equals(">=") && Float.parseFloat(value.trim()) <= Float.parseFloat(element)) {
+                    values.add(index);
+                } else if (operation.equals("<") && Float.parseFloat(value.trim()) > Float.parseFloat(element)) {
+                    values.add(index);
+                } else if (operation.equals(">") && Float.parseFloat(value.trim()) < Float.parseFloat(element)) {
+                    values.add(index);
+                } else if (operation.equals("!=") && !value.equals(element)) {
+                    values.add(index);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Not a number/"+ Float.parseFloat(value.trim())+"/");
+            }
+
+            /**
+             * Fututre <= < > And other operations here, Need to check the data type at this level also.
+             */
+
+            index++;
+        }
+
+        int size = values.size();
+        //If any elements are present
+        if(size > 0) {
+            Integer[] temp = values.toArray(new Integer[size]);
+            Integer []result = new Integer[size];
+            for(int i = 0; i < size; i++)
+                result[i] = temp[i];
+            return result;
+        }
+        return null;
+    }
+
+    /**
+     * Gets value of element by id
+     * @param id
+     * @return
+     */
+    public String getSelectedValues(int id) {
+        return data.get(id);
+    }
+
     /**
      * Update a value at given index
      * @param id index where data is to be updated

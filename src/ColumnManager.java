@@ -183,6 +183,122 @@ public class ColumnManager implements Serializable{
     }
 
     /**
+     * Selecting through entire column for given operation
+     * @param input string to be searched for
+     * @param operation operation to be performed ( supports <, <=, >, >=, =, !=)
+     * @return Array list of selected IDs
+     */
+    public ArrayList<Integer> conditionalSelect(String input, String operation) {
+        ArrayList<Integer> index = new ArrayList<Integer>();
+        int countSoFar = 0;
+        int countOfSerialized = 0;
+
+        //Search File By File
+        for(String file: fileNames) {
+            ColumnSerialized column = deserializer(file);
+
+            //Array Of Selected Elements
+            Integer[] store = column.conditionalSelect(input, operation);
+            if(store != null) {
+                //Store all the returned elements with appropriate index
+                for(int item : store) {
+                    index.add(item + serializeSize*countOfSerialized);
+                }
+            }
+            //Incrementing countOfSerialized to show that we've moved to next file
+            countOfSerialized++;
+        }
+        //Check If Input Matches
+        if(index.isEmpty()) {
+            System.out.println("Result Not Found.");
+        } else {
+            System.out.println("Result Found");
+            System.out.println("Column Name : "+columnName);
+            System.out.println(index);
+        }
+        //Return Index Of Item
+        return index;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public int getElementSize() {
+        return elementSize;
+    }
+
+    public void setElementSize(int elementSize) {
+        this.elementSize = elementSize;
+    }
+
+    public int getSerializeSize() {
+        return serializeSize;
+    }
+
+    public void setSerializeSize(int serializeSize) {
+        this.serializeSize = serializeSize;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    /**
+         * Get an Array list of values corresponding to ids provided.
+         * @param ids ids of elements to be selected
+         * @return
+         */
+    public ArrayList<String> getColumnValues(int[] ids) {
+        Arrays.sort(ids);
+        ArrayList<String> values = new ArrayList<String>();
+
+        //If no ids are selected, then we return null.
+        if(ids == null) {
+            return null;
+        }
+        int size = ids.length;
+        int countSoFar = 0; //How many items have you visited so far
+        int countOfSerialized = 0; //Which file are you on
+        //Search File By File
+        for(String file: fileNames) {
+
+            //Checking if the data at given index actually belongs to the current file
+            while(ids[countSoFar] < (countOfSerialized + 1)*serializeSize) {
+                //Get the selected column
+                ColumnSerialized column = deserializer(file);
+                String value = column.getSelectedValues(ids[countSoFar] - countOfSerialized*serializeSize);
+                if(value != null) {
+                    values.add(value);
+                }
+                countSoFar++;
+                if (countSoFar == size) {
+                    System.out.println("Count So Far" + countSoFar+"size "+size);
+                    break;
+                }
+            }
+            if (countSoFar == size) {
+                System.out.println("Count So Far" + countSoFar+"size "+size);
+                break;
+            }
+
+            //Moving to next file
+            countOfSerialized++;
+        }
+        System.out.println("Selected Elements Are");
+        System.out.println(values.toString());
+        return values;
+    }
+
+    /**
      * Update data of given ids
      * @param id Array of ids to be updated
      * @param input input string where you want to make an update
@@ -311,13 +427,13 @@ public class ColumnManager implements Serializable{
         Scanner scan = new Scanner(System.in);
         while(!exit) {
             System.out.println("What action do you want to do?");
-            System.out.println("1. Insert, 2. Delete, 3. Update, 4. Select, 5. Exit");
-            int option = Integer.parseInt(scan.nextLine());
+            System.out.println("1. Insert, 2. Delete, 3. Update, 4. Select, 5. Get Values, 6. Conditional Select 7. Exit");
+            int option = Integer.parseInt(scan.next());
             int size;
             switch (option) {
                 case 1:
                     System.out.println("Enter Data To Be Inserted");
-                    String input = scan.nextLine();
+                    String input = scan.next();
                     manager.insert(input);
                     System.out.println("Total Elements Are :"+manager.elementCount);;
                     break;
@@ -355,6 +471,24 @@ public class ColumnManager implements Serializable{
                     manager.select(scan.nextLine(), 0);
                     break;
                 case 5:
+                    System.out.println("Enter Number of Ids to be selected");
+                    int count = scan.nextInt();
+                    int idsearch[] = new int[count];
+                    System.out.println ("Enter Ids to be Serached");
+                    for(int i = 0 ; i < count ; i++)
+                        idsearch[i] = scan.nextInt();
+
+                    System.out.println( manager.getColumnValues(idsearch));
+                    break;
+                case 6:
+                    System.out.println("Enter the Value To Be Compared With");
+                    scan.nextLine();
+                    String userInput = scan.nextLine();
+                    System.out.println("Enter the operator");
+                    String userOp = scan.nextLine();
+                    manager.conditionalSelect(userInput, userOp);
+                    break;
+                case 7:
                     exit = true;
             }
         }
