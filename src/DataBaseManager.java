@@ -85,9 +85,95 @@ public class DataBaseManager implements Serializable{
 
 
 
+
+    public static void insert(String tableName, int columnCount, int serializationSize, List<String> listdatatype, List<Integer> listsize,
+                              List<String> listcolumnnames) throws IOException {
+
+        //Creating The Table
+        String DataBaseName = "CollegeManagement.ser";
+        //Object has been serialized previous and2 stored. Only one Database for now.
+        DataBaseManager dbManager = deserializer(DataBaseName);
+
+        TableManager table = new TableManager(tableName);
+
+        List<String[]> columnInfo = new ArrayList<String[]>();
+
+        //Insert Information Of Each Column
+
+        for (int i = 0; i < columnCount; i++) {
+
+            String dataType = listdatatype.get(i);
+            int elementSize = listsize.get(i);
+            String columnName = listcolumnnames.get(i);
+            table.addColumnInfo(columnName,new ColumnManager(dataType, elementSize, serializationSize, columnName));
+        }
+
+        TableManager.serializer(table, tableName+".ser");
+        //Here we've info of the table, we then attached this table to a particular DB
+        dbManager.tableNames.add(tableName+".ser");
+        serializer(dbManager, DataBaseName);
+
+    }
+
+
+
+    public static void insertintotable (String loadTable, List<String> listinp) throws IOException {
+
+        String DataBaseName = "CollegeManagement.ser";
+        //Object has been serialized previous and2 stored. Only one Database for now.
+        DataBaseManager dbManager = deserializer(DataBaseName);
+
+        HashMap<String, String> insertData = new HashMap<String, String>();
+        TableManager tableManager = TableManager.deserializer(loadTable + ".ser");
+        int i=0 ;
+        for(String keyNames : tableManager.columnManagers.keySet()) {
+            System.out.println(keyNames + " :");
+            String inputData = listinp.get(i);
+            insertData.put(keyNames, inputData);
+        i++;
+        }
+        tableManager.insert(insertData);
+        //Storing the info of the table
+        TableManager.serializer(tableManager, loadTable+".ser");
+        System.out.println(dbManager);
+
+    }
+
+
+
+    public static void searchintable (int noOps, String loadTable, List<String> listcolumnName, List<String> listValue,
+                                      List<String> listComparator,List<String> listOperation) throws IOException {
+        ArrayList<OperationPair> operationPairs = new ArrayList<OperationPair>();
+        for(int i = 0; i < noOps; i++) {
+            //System.out.println("Enter Column :");
+            String columnName = listcolumnName.get(i);
+            //System.out.println("Enter Value :");
+            String value = listValue.get(i);
+            //System.out.println("Enter Comparator :");
+            String operation = listComparator.get(i);
+            //System.out.println("Next Operation");
+            String nextOp = listOperation.get(i);
+
+            QueryContainer queryPart = new QueryContainer(columnName,operation,value);
+            OperationPair ops = new OperationPair(queryPart,nextOp);
+            operationPairs.add(ops);
+
+        }
+        TableManager selectTable = TableManager.deserializer(loadTable + ".ser");
+        selectTable.select(operationPairs);
+        TableManager.serializer(selectTable, loadTable+ ".ser");
+
+    }
+
+
+
+
+
+
+
     public static void main(String[] args) throws IOException {
         String DataBaseName = "CollegeManagement.ser";
-        //Object has been serialized previous and stored. Only one Database for now.
+        //Object has been serialized previous and2 stored. Only one Database for now.
         DataBaseManager dbManager = deserializer(DataBaseName);
 
 
